@@ -4,7 +4,11 @@ import { openRepository } from '../data/db';
 import type { Repository } from '../data/repository';
 import { quotaSnapshot, type QuotaSnapshot } from '../lib/quota';
 import { audioFileFor, deleteAudio } from '../services/audioFiles';
+import { Platform } from 'react-native';
+
+import { SAMPLE_PREFIX } from '../data/samples';
 import { nativeEngine } from '../services/nativeEngine';
+import { createSampleEngine } from '../services/sampleEngine';
 import {
   connectStore,
   isEntitlementActive,
@@ -48,6 +52,8 @@ type AppState = {
   setSemanticEnabled: (v: boolean) => Promise<void>;
 };
 
+const WEB_ENGINE = createSampleEngine();
+
 const Ctx = createContext<AppState | null>(null);
 
 const ENTITLEMENT_KEY = 'entitlement_cache';
@@ -57,7 +63,7 @@ const SEMANTIC_KEY = 'semantic_search_enabled';
 export function AppStateProvider({
   children,
   repository,
-  engine = nativeEngine,
+  engine = Platform.OS === 'web' ? WEB_ENGINE : nativeEngine,
 }: {
   children: ReactNode;
   /** Injecté par les tests ; sinon la base SQLite de l'app est ouverte. */
@@ -157,7 +163,11 @@ export function AppStateProvider({
         const result = await runTranscription(
           repo,
           engine,
-          { interviewId, fileUri: audioFileFor(interview.audioRef).uri, isPro },
+          {
+            interviewId,
+            fileUri: interview.audioRef.startsWith(SAMPLE_PREFIX) ? interview.audioRef : audioFileFor(interview.audioRef).uri,
+            isPro,
+          },
           {
             onPhase: (phase) => update({ interviewId, phase, progress: 0 }),
             onModelProgress: (progress) => update({ interviewId, phase: 'model', progress }),

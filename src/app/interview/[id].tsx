@@ -287,7 +287,7 @@ function StatusCard({
   onCancel: () => void;
 }) {
   if (job || interview.status === 'processing') {
-    const phase = job?.phase === 'model' ? 'Téléchargement du modèle français (une seule fois)…' : 'Transcription sur l’iPhone…';
+    const phase = job?.phase === 'model' ? 'Téléchargement du modèle français (une seule fois)…' : Platform.OS === 'web' ? 'Transcription simulée (aperçu web)…' : 'Transcription sur l’iPhone…';
     const progress = job?.progress ?? interview.progress;
     return (
       <Card style={{ gap: space.md }}>

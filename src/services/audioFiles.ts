@@ -4,6 +4,7 @@ import { Directory, File, Paths } from 'expo-file-system';
 
 import { MotMinuteSpeech } from '../../modules/motminute-speech';
 import { DEMO_AUDIO_REF } from '../data/demo';
+import { SAMPLE_AUDIO, SAMPLE_PREFIX } from '../data/samples';
 
 export const SUPPORTED_EXTENSIONS = ['m4a', 'mp3', 'wav'] as const;
 
@@ -32,11 +33,12 @@ export function audioFileFor(ref: string): File {
 
 export function audioSourceFor(ref: string): AudioSource | number {
   if (ref === DEMO_AUDIO_REF) return DEMO_AUDIO;
+  if (ref.startsWith(SAMPLE_PREFIX)) return SAMPLE_AUDIO[ref.slice(SAMPLE_PREFIX.length)];
   return { uri: audioFileFor(ref).uri };
 }
 
 export function audioExists(ref: string): boolean {
-  if (ref === DEMO_AUDIO_REF) return true;
+  if (ref === DEMO_AUDIO_REF || ref.startsWith(SAMPLE_PREFIX)) return true;
   try {
     return audioFileFor(ref).exists;
   } catch {
@@ -45,7 +47,7 @@ export function audioExists(ref: string): boolean {
 }
 
 export function deleteAudio(ref: string): void {
-  if (ref === DEMO_AUDIO_REF) return;
+  if (ref === DEMO_AUDIO_REF || ref.startsWith(SAMPLE_PREFIX)) return;
   try {
     const f = audioFileFor(ref);
     if (f.exists) f.delete();

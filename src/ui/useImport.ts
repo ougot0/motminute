@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Platform } from 'react-native';
 
 import { ImportError, pickAndImportAudio, type ImportedAudio } from '../services/audioFiles';
+import { sampleRef, type Sample } from '../data/samples';
 import { useApp } from '../state/AppState';
 import { Alert } from './alert';
 
@@ -28,7 +29,7 @@ export function useAddInterview() {
 
   const importFile = async () => {
     if (Platform.OS === 'web') {
-      Alert.alert('Aperçu web', 'L’import de fichiers audio fonctionne dans l’app iPhone. Ici, essayez l’interview démo.');
+      router.push('/samples'); // aperçu web : choisir un fichier d'exemple
       return;
     }
     setImporting(true);
@@ -42,5 +43,10 @@ export function useAddInterview() {
     }
   };
 
-  return { importing, importFile, add };
+  /** Importe une interview d'exemple (aperçu web) : même parcours qu'un vrai fichier. */
+  const importSample = async (s: Sample) => {
+    await add({ id: `ex-${Date.now().toString(36)}`, ref: sampleRef(s.id), title: s.title, durationSec: s.durationSec, originalFilename: s.fileName });
+  };
+
+  return { importing, importFile, importSample, add };
 }
