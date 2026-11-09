@@ -1,0 +1,157 @@
+{
+  "title": "Démo — Marc Delaunay, ex-directeur de la communication (fictif)",
+  "durationSec": 1274.85,
+  "note": "Interview fictive, voix de synthèse. Minutages mesurés sur l'audio généré.",
+  "segments": [
+    {
+      "start": 0.5,
+      "end": 3.56,
+      "speaker": "Journaliste",
+      "text": "Bonjour Marc Delaunay, et merci d’avoir accepté cet entretien."
+    },
+    {
+      "start": 4.36,
+      "end": 8.93,
+      "speaker": "Invité",
+      "text": "Merci à vous. Je vous remercie de m’avoir invité, ce n’est pas un exercice facile pour moi."
+    },
+    {
+      "start": 9.74,
+      "end": 13.08,
+      "speaker": "Journaliste",
+      "text": "Vous avez passé douze ans chez Varennes Industries. Comment êtes-vous arrivé là-bas ?"
+    },
+    {
+      "start": 13.88,
+      "end": 20.22,
+      "speaker": "Invité",
+      "text": "J’ai quitté Lyon en 2011 pour Paris. J’ai été recruté comme chargé de communication, et le premier jour, je ne connaissais personne."
+    },
+    {
+      "start": 190.0,
+      "end": 191.87,
+      "speaker": "Journaliste",
+      "text": "Pourquoi avez-vous accepté ce poste à l’époque ?"
+    },
+    {
+      "start": 192.67,
+      "end": 196.95,
+      "speaker": "Invité",
+      "text": "Honnêtement, pour le salaire. Je gagnais à peine deux mille euros par mois dans mon ancien journal."
+    },
+    {
+      "start": 197.75,
+      "end": 201.21,
+      "speaker": "Invité",
+      "text": "Et puis j’aimais l’idée de raconter l’industrie, les usines, les gens qui y travaillent."
+    },
+    {
+      "start": 465.0,
+      "end": 467.45,
+      "speaker": "Journaliste",
+      "text": "Vous devenez directeur de la communication en 2017."
+    },
+    {
+      "start": 468.25,
+      "end": 472.99,
+      "speaker": "Invité",
+      "text": "Oui. C’était une fierté, je ne vais pas le cacher. Mais c’est aussi là que les choses se compliquent."
+    },
+    {
+      "start": 473.79,
+      "end": 477.14,
+      "speaker": "Invité",
+      "text": "La direction voulait des messages très lisses, même quand la réalité ne l’était pas."
+    },
+    {
+      "start": 740.0,
+      "end": 741.73,
+      "speaker": "Journaliste",
+      "text": "Parlons de la fermeture du site de Saint-Aubin."
+    },
+    {
+      "start": 742.53,
+      "end": 748.82,
+      "speaker": "Invité",
+      "text": "La décision a été prise à l’automne 2019, en comité restreint. On m’a demandé de la présenter comme une simple réorganisation."
+    },
+    {
+      "start": 749.62,
+      "end": 753.11,
+      "speaker": "Invité",
+      "text": "Il y a eu une démission collective du comité d’entreprise quelques semaines plus tard."
+    },
+    {
+      "start": 753.9,
+      "end": 757.19,
+      "speaker": "Invité",
+      "text": "J’avais la trouille, je vous l’avoue. Trois cents familles étaient concernées."
+    },
+    {
+      "start": 930.0,
+      "end": 931.6,
+      "speaker": "Journaliste",
+      "text": "Est-ce que vous avez essayé de vous y opposer ?"
+    },
+    {
+      "start": 932.4,
+      "end": 934.89,
+      "speaker": "Invité",
+      "text": "J’ai écrit une note interne. Elle est restée sans réponse."
+    },
+    {
+      "start": 935.69,
+      "end": 939.59,
+      "speaker": "Invité",
+      "text": "C’est une décision collective, m’a-t-on répondu ensuite, et vous n’avez pas à la discuter."
+    },
+    {
+      "start": 1116.36,
+      "end": 1118.07,
+      "speaker": "Journaliste",
+      "text": "Et puis il y a ce matin de janvier 2020."
+    },
+    {
+      "start": 1118.87,
+      "end": 1121.2,
+      "speaker": "Invité",
+      "text": "Je suis entré dans le bureau du président avec une lettre."
+    },
+    {
+      "start": 1122.0,
+      "end": 1125.04,
+      "speaker": "Invité",
+      "text": "J’ai quitté mon poste parce que je ne pouvais plus défendre cette décision."
+    },
+    {
+      "start": 1125.84,
+      "end": 1128.52,
+      "speaker": "Invité",
+      "text": "Mon adjoint, lui, a été remercié six mois plus tard."
+    },
+    {
+      "start": 1260.0,
+      "end": 1260.85,
+      "speaker": "Journaliste",
+      "text": "Est-ce que vous regrettez ?"
+    },
+    {
+      "start": 1261.65,
+      "end": 1265.26,
+      "speaker": "Invité",
+      "text": "Aucun regret. Si c’était à refaire, je partirais peut-être même plus tôt."
+    },
+    {
+      "start": 1266.06,
+      "end": 1270.77,
+      "speaker": "Invité",
+      "text": "Aujourd’hui je forme de jeunes journalistes, et je leur dis de ne jamais signer un texte qu’ils ne pourraient pas défendre."
+    },
+    {
+      "start": 1271.58,
+      "end": 1272.85,
+      "speaker": "Journaliste",
+      "text": "Marc Delaunay, merci."
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+{
+  "CFBundleDisplayName": "MotMinute",
+  "NSSpeechRecognitionUsageDescription": "MotMinute transcrit vos interviews directement sur l’iPhone pour retrouver les citations. L’audio ne quitte pas l’appareil."
+}
