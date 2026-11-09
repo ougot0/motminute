@@ -7,7 +7,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "backgroundColor": "#F7F3EC",
+    "backgroundColor": "#F8F7F3",
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.motminute.app",
@@ -54,9 +54,16 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#F7F3EC",
-          "image": "./assets/splash-icon.png",
-          "imageWidth": 160
+          "backgroundColor": "#2B00FF",
+          "image": "./assets/splash-logo.png",
+          "imageWidth": 220,
+          "resizeMode": "contain",
+          "ios": {
+            "backgroundColor": "#2B00FF",
+            "image": "./assets/splash-logo.png",
+            "imageWidth": 220,
+            "resizeMode": "contain"
+          }
         }
       ],
       "expo-iap"
