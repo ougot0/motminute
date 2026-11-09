@@ -2,12 +2,12 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { FlatList, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import type { SearchHit } from '../../lib/search';
-import { useApp } from '../../state/AppState';
-import { HitRow } from '../../ui/HitRow';
-import { colors, HIT, radius, space } from '../../ui/theme';
-import { useSearch } from '../../ui/useSearch';
-import { SUGGESTIONS } from '../../ui/suggestions';
+import type { SearchHit } from '../lib/search';
+import { useApp } from '../state/AppState';
+import { HitRow } from '../ui/HitRow';
+import { colors, HIT, radius, space } from '../ui/theme';
+import { useSearch } from '../ui/useSearch';
+import { SUGGESTIONS } from '../ui/suggestions';
 
 const TIPS = [
   'Décrivez l’idée avec vos mots : « pourquoi il a démissionné » retrouve « j’ai quitté mon poste parce que… ».',

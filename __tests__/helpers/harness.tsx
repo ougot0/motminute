@@ -6,14 +6,16 @@ import { configure, renderRouter } from 'expo-router/testing-library';
 
 import Library from '../../src/app/(tabs)/index';
 import TabsLayout from '../../src/app/(tabs)/_layout';
-import Search from '../../src/app/(tabs)/search';
+import Search from '../../src/app/search';
+import Summaries from '../../src/app/(tabs)/summaries';
+import RecordTab from '../../src/app/(tabs)/enregistrer';
 import LibraryTab from '../../src/app/(tabs)/library';
 import Record from '../../src/app/record';
 import Samples from '../../src/app/samples';
 import Interview from '../../src/app/interview/[id]';
 import Paywall from '../../src/app/paywall';
 import Quotes from '../../src/app/(tabs)/quotes';
-import Settings from '../../src/app/(tabs)/settings';
+import Settings from '../../src/app/settings';
 import { DEMO_TRANSCRIPT, seedDemo } from '../../src/data/demo';
 import { Repository } from '../../src/data/repository';
 import type { TranscriptionEngine } from '../../src/services/transcriptionRunner';
@@ -55,12 +57,14 @@ export async function bootApp(dir: string): Promise<{ repo: Repository; db: Clos
       _layout: Layout,
       '(tabs)/_layout': TabsLayout,
       '(tabs)/index': Library,
-      '(tabs)/search': Search,
+      search: Search,
+      '(tabs)/summaries': Summaries,
+      '(tabs)/enregistrer': RecordTab,
       '(tabs)/library': LibraryTab,
       record: Record,
       samples: Samples,
       '(tabs)/quotes': Quotes,
-      '(tabs)/settings': Settings,
+      settings: Settings,
       'interview/[id]': Interview,
       paywall: Paywall,
     },

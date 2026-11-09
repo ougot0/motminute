@@ -36,6 +36,8 @@ export function RootStack() {
     >
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="interview/[id]" options={{ title: '' }} />
+      <Stack.Screen name="settings" options={{ title: 'Réglages' }} />
+      <Stack.Screen name="search" options={{ title: 'Recherche' }} />
       <Stack.Screen name="paywall" options={{ title: 'MotMinute Pro', presentation: 'modal' }} />
       <Stack.Screen name="record" options={{ title: 'Enregistrer', presentation: 'modal' }} />
       <Stack.Screen name="samples" options={{ title: 'Importer une interview', presentation: 'modal' }} />

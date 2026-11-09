@@ -2,16 +2,16 @@ import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Platform, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 
-import { IS_DEV_BUILD } from '../../config';
-import { seedDemo } from '../../data/demo';
-import { formatDate } from '../../lib/time';
-import { nativeEngine, osVersionInfo } from '../../services/nativeEngine';
-import { runSemanticDiagnostic, semanticAvailable, type ProbeReport } from '../../services/semantic';
-import { engineMessage, type EngineAvailability } from '../../services/transcriptionRunner';
-import { useApp } from '../../state/AppState';
-import { Alert } from '../../ui/alert';
-import { Button, Card, ProgressBar } from '../../ui/components';
-import { colors, space } from '../../ui/theme';
+import { IS_DEV_BUILD } from '../config';
+import { seedDemo } from '../data/demo';
+import { formatDate } from '../lib/time';
+import { nativeEngine, osVersionInfo } from '../services/nativeEngine';
+import { runSemanticDiagnostic, semanticAvailable, type ProbeReport } from '../services/semantic';
+import { engineMessage, type EngineAvailability } from '../services/transcriptionRunner';
+import { useApp } from '../state/AppState';
+import { Alert } from '../ui/alert';
+import { Button, Card, ProgressBar } from '../ui/components';
+import { colors, space } from '../ui/theme';
 
 export default function SettingsScreen() {
   const { repo, bump, quota, isPro, entitlement, devPro, setDevPro, semanticEnabled, setSemanticEnabled } = useApp();

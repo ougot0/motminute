@@ -125,7 +125,7 @@ export default function HomeScreen() {
             </Text>
           </View>
           <Text style={styles.proText}>
-            {Math.floor((quota.remainingSeconds ?? 0) / 60)} min de transcription restantes sur 60. Pro : transcriptions illimitées, résumés et export.
+            {Math.floor((quota.remainingSeconds ?? 0) / 60)} min de transcription restantes sur 60. Pro : transcriptions illimitées et export de toutes les citations.
           </Text>
           <ProgressBar value={quota.usedSeconds / (quota.limitSeconds ?? 1)} />
         </Card>
