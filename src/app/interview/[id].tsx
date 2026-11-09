@@ -1,7 +1,6 @@
-import * as Clipboard from 'expo-clipboard';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { FlatList, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { Interview, Segment } from '../../data/repository';
@@ -9,6 +8,8 @@ import { formatQuote } from '../../lib/quote';
 import { contextStart, formatDate, formatDuration, formatTimestamp } from '../../lib/time';
 import { audioExists, audioSourceFor } from '../../services/audioFiles';
 import { useApp } from '../../state/AppState';
+import { copyText } from '../../ui/clipboard';
+import { Alert } from '../../ui/alert';
 import { Button, Card, ProgressBar, StatusBadge, TextPrompt, TimeChip, useToast } from '../../ui/components';
 import { HitRow } from '../../ui/HitRow';
 import { PlayerBar, useInterviewPlayer } from '../../ui/Player';
@@ -102,8 +103,8 @@ export default function InterviewScreen() {
 
   const copy = async (s: Segment) => {
     if (!interview) return;
-    await Clipboard.setStringAsync(formatQuote({ text: s.text, interviewTitle: interview.title, start: s.start }));
-    toast.show('Citation copiée avec son minutage');
+    const ok = await copyText(formatQuote({ text: s.text, interviewTitle: interview.title, start: s.start }));
+    toast.show(ok ? 'Citation copiée avec son minutage' : 'Copie bloquée par le navigateur');
   };
 
   const save = async (s: Segment) => {
@@ -337,7 +338,7 @@ function SegmentRow({
       accessibilityHint="Sélectionne le passage : écouter, copier, enregistrer, corriger"
       style={[styles.seg, playing && styles.segPlaying, selected && styles.segSelected]}
     >
-      <TimeChip seconds={s.start} onPress={onPlay} testID={`seg-time-${s.id}`} />
+      <TimeChip seconds={s.start} onPress={onPlay} active={playing} testID={`seg-time-${s.id}`} />
       <Text style={styles.segText}>
         {s.text}
         {s.edited ? <Text style={styles.edited}> (corrigé)</Text> : null}
@@ -360,7 +361,7 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
   center: { alignItems: 'center', justifyContent: 'center', gap: space.lg, padding: space.xl },
   list: { padding: space.lg, paddingBottom: space.xxl, gap: space.sm },
-  title: { fontSize: 24, fontWeight: '700', color: colors.text, lineHeight: 30 },
+  title: { fontSize: 26, fontWeight: '800', color: colors.text, lineHeight: 32 },
   meta: { fontSize: 14, color: colors.muted },
   cardText: { fontSize: 15, color: colors.text, lineHeight: 21 },
   cardHint: { fontSize: 13, color: colors.muted },
@@ -375,11 +376,11 @@ const styles = StyleSheet.create({
     minHeight: HIT + 4,
   },
   searchIcon: { fontSize: 20, color: colors.muted, marginRight: space.sm },
-  searchInput: { flex: 1, fontSize: 17, color: colors.text, paddingVertical: space.md },
+  searchInput: { flex: 1, fontSize: 17, color: colors.text, paddingVertical: space.md, ...(Platform.OS === 'web' ? { outlineStyle: 'none' as never } : null) },
   seg: { flexDirection: 'row', gap: space.md, alignItems: 'flex-start', borderRadius: radius.md, padding: space.sm, borderWidth: 1, borderColor: 'transparent' },
-  segPlaying: { backgroundColor: colors.playing },
+  segPlaying: { backgroundColor: colors.playing, borderLeftColor: colors.mint, borderLeftWidth: 3 },
   segSelected: { backgroundColor: colors.surface, borderColor: colors.accent },
-  segText: { flex: 1, fontFamily: fonts.serif, fontSize: 17, lineHeight: 26, color: colors.text },
+  segText: { flex: 1, fontFamily: fonts.serif, fontSize: 17, lineHeight: 25, color: colors.text },
   edited: { fontFamily: undefined, fontSize: 12, color: colors.faint },
   panel: { paddingHorizontal: space.lg, paddingTop: space.md, gap: space.sm, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
   panelTop: { flexDirection: 'row', alignItems: 'center', gap: space.md },

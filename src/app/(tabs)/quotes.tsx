@@ -1,16 +1,17 @@
-import * as Clipboard from 'expo-clipboard';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import type { SavedQuote } from '../data/repository';
-import { formatQuote } from '../lib/quote';
-import { useApp } from '../state/AppState';
-import { TimeChip, useToast } from '../ui/components';
-import { colors, fonts, HIT, radius, space } from '../ui/theme';
+import type { SavedQuote } from '../../data/repository';
+import { formatQuote } from '../../lib/quote';
+import { useApp } from '../../state/AppState';
+import { copyText } from '../../ui/clipboard';
+import { Alert } from '../../ui/alert';
+import { TimeChip, useToast } from '../../ui/components';
+import { colors, fonts, HIT, radius, space } from '../../ui/theme';
 
 export default function QuotesScreen() {
-  const { repo, version, bump } = useApp();
+  const { repo, version, bump, isPro } = useApp();
   const [quotes, setQuotes] = useState<SavedQuote[]>([]);
   const toast = useToast();
 
@@ -33,6 +34,22 @@ export default function QuotesScreen() {
   return (
     <View style={styles.screen}>
       <FlatList
+        ListHeaderComponent={
+          quotes.length ? (
+            <Pressable
+              accessibilityRole="button"
+              onPress={async () => {
+                if (!isPro) return router.push({ pathname: '/paywall', params: { reason: 'export' } });
+                const ok = await copyText(quotes.map((q) => formatQuote({ text: q.text, interviewTitle: q.interviewTitle, start: q.start })).join('\n\n'));
+                toast.show(ok ? `${quotes.length} citations copiées` : 'Copie bloquée par le navigateur');
+              }}
+              style={({ pressed }) => [styles.exportBtn, pressed && { opacity: 0.8 }]}
+            >
+              <Text style={styles.exportText}>Copier toutes les citations</Text>
+              {!isPro ? <Text style={styles.proBadge}>PRO</Text> : null}
+            </Pressable>
+          ) : undefined
+        }
         data={quotes}
         keyExtractor={(q) => String(q.id)}
         contentContainerStyle={styles.list}
@@ -56,8 +73,8 @@ export default function QuotesScreen() {
               <Action
                 label="Copier"
                 onPress={async () => {
-                  await Clipboard.setStringAsync(formatQuote({ text: item.text, interviewTitle: item.interviewTitle, start: item.start }));
-                  toast.show('Citation copiée avec son minutage');
+                  const ok = await copyText(formatQuote({ text: item.text, interviewTitle: item.interviewTitle, start: item.start }));
+                  toast.show(ok ? 'Citation copiée avec son minutage' : 'Copie bloquée par le navigateur');
                 }}
               />
               <Action
@@ -99,12 +116,15 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
-    borderWidth: StyleSheet.hairlineWidth,
+    borderWidth: 1,
     borderColor: colors.border,
     padding: space.lg,
     gap: space.md,
   },
   text: { fontFamily: fonts.serif, fontSize: 18, lineHeight: 27, color: colors.text },
+  exportBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space.sm, minHeight: HIT, borderRadius: radius.md, borderWidth: 1, borderColor: colors.accent },
+  exportText: { fontSize: 15, fontWeight: '700', color: colors.accent },
+  proBadge: { fontSize: 11, fontWeight: '800', color: colors.onInk, backgroundColor: colors.accent, borderRadius: radius.sm, paddingHorizontal: 6, paddingVertical: 2, overflow: 'hidden' },
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   title: { flex: 1, fontSize: 14, color: colors.muted, fontWeight: '600' },
   actions: { flexDirection: 'row', gap: space.sm, flexWrap: 'wrap' },

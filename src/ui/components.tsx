@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   Animated,
   Modal,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -64,7 +65,20 @@ const buttonVariants: Record<string, { box: ViewStyle; text: TextStyle }> = {
 };
 
 /** Minutage cliquable, toujours bien visible. */
-export function TimeChip({ seconds, onPress, large, testID }: { seconds: number; onPress?: () => void; large?: boolean; testID?: string }) {
+export function TimeChip({
+  seconds,
+  onPress,
+  large,
+  active,
+  testID,
+}: {
+  seconds: number;
+  onPress?: () => void;
+  large?: boolean;
+  /** Passage en cours de lecture : repère menthe. */
+  active?: boolean;
+  testID?: string;
+}) {
   const label = formatTimestamp(seconds);
   return (
     <Pressable
@@ -74,9 +88,9 @@ export function TimeChip({ seconds, onPress, large, testID }: { seconds: number;
       hitSlop={8}
       accessibilityRole={onPress ? 'button' : 'text'}
       accessibilityLabel={`Écouter à ${label}`}
-      style={({ pressed }) => [styles.chip, large && styles.chipLarge, pressed && { opacity: 0.7 }]}
+      style={({ pressed }) => [styles.chip, large && styles.chipLarge, active && styles.chipActive, pressed && { opacity: 0.7 }]}
     >
-      <Text style={[styles.chipText, large && styles.chipTextLarge]}>{label}</Text>
+      <Text style={[styles.chipText, large && styles.chipTextLarge, active && styles.chipTextActive]}>{label}</Text>
     </Pressable>
   );
 }
@@ -141,6 +155,14 @@ type PromptProps = {
 
 /** Fenêtre de saisie (renommer, corriger un bloc). Le contenu est recréé à chaque ouverture. */
 export function TextPrompt(props: PromptProps) {
+  // Sur le web, une superposition dans l'écran (reste dans le cadre iPhone de l'aperçu).
+  if (Platform.OS === 'web') {
+    return props.visible ? (
+      <View style={StyleSheet.absoluteFill}>
+        <PromptBody {...props} />
+      </View>
+    ) : null;
+  }
   return (
     <Modal visible={props.visible} transparent animationType="fade" onRequestClose={props.onCancel}>
       {props.visible ? <PromptBody {...props} /> : null}
@@ -168,6 +190,39 @@ function PromptBody({ title, hint, initial, multiline, confirmLabel = 'Enregistr
           <Button label="Annuler" variant="secondary" onPress={onCancel} style={{ flex: 1 }} />
           <Button label={confirmLabel} onPress={() => onConfirm(value)} disabled={!value.trim()} style={{ flex: 1 }} testID="prompt-confirm" />
         </View>
+      </View>
+    </View>
+  );
+}
+
+/** Menu d'actions affiché dans l'écran (web et Android ; iOS utilise la feuille native). */
+export function ChoiceSheet({
+  title,
+  choices,
+  onClose,
+}: {
+  title: string;
+  choices: { label: string; destructive?: boolean; onPress: () => void }[];
+  onClose: () => void;
+}) {
+  return (
+    <View style={[StyleSheet.absoluteFill, styles.backdrop, { justifyContent: 'flex-end' }]}>
+      <View style={styles.sheet}>
+        <Text style={styles.sheetTitle} numberOfLines={2}>
+          {title}
+        </Text>
+        {choices.map((c) => (
+          <Button
+            key={c.label}
+            label={c.label}
+            variant={c.destructive ? 'danger' : 'secondary'}
+            onPress={() => {
+              onClose();
+              c.onPress();
+            }}
+          />
+        ))}
+        <Button label="Annuler" variant="ghost" onPress={onClose} />
       </View>
     </View>
   );
@@ -219,6 +274,8 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   chipLarge: { minHeight: 40, paddingHorizontal: 14 },
+  chipActive: { backgroundColor: colors.mintSoft },
+  chipTextActive: { color: colors.mintText },
   chipText: { fontFamily: fonts.mono, fontWeight: '700', fontSize: 15, color: colors.accent, fontVariant: ['tabular-nums'] },
   chipTextLarge: { fontSize: 18 },
   mark: { backgroundColor: colors.highlight, color: colors.text },
@@ -229,13 +286,13 @@ export const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
-    borderWidth: StyleSheet.hairlineWidth,
+    borderWidth: 1,
     borderColor: colors.border,
     padding: space.lg,
   },
   backdrop: { flex: 1, backgroundColor: 'rgba(42,44,48,0.35)', justifyContent: 'center', padding: space.xl },
   sheet: { backgroundColor: colors.surface, borderRadius: radius.lg, padding: space.xl, gap: space.md },
-  sheetTitle: { fontSize: 18, fontWeight: '700', color: colors.text },
+  sheetTitle: { fontSize: 18, fontWeight: '800', color: colors.text },
   sheetHint: { fontSize: 14, color: colors.muted },
   input: {
     borderWidth: 1,

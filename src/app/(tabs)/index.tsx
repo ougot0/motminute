@@ -1,32 +1,18 @@
-import { Link, router, Stack, useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { ActionSheetIOS, Alert, FlatList, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActionSheetIOS, FlatList, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import type { Interview } from '../data/repository';
-import type { SearchHit } from '../lib/search';
-import { formatDate, formatDuration } from '../lib/time';
-import { ImportError, pickAndImportAudio } from '../services/audioFiles';
-import { useApp } from '../state/AppState';
-import { Button, Card, ProgressBar, StatusBadge, TextPrompt } from '../ui/components';
-import { HitRow } from '../ui/HitRow';
-import { colors, HIT, radius, space } from '../ui/theme';
-import { useSearch } from '../ui/useSearch';
-
-function HeaderLinks() {
-  return (
-    <View style={{ flexDirection: 'row', gap: space.lg }}>
-      <Link href="/quotes" style={styles.headerLink} accessibilityLabel="Citations enregistrées">
-        Citations
-      </Link>
-      <Link href="/settings" style={styles.headerLink} accessibilityLabel="Réglages">
-        Réglages
-      </Link>
-    </View>
-  );
-}
-
-// Options stables : un objet recréé à chaque rendu relancerait la navigation en boucle.
-const SCREEN_OPTIONS = { headerRight: () => <HeaderLinks /> };
+import type { Interview } from '../../data/repository';
+import type { SearchHit } from '../../lib/search';
+import { formatDate, formatDuration } from '../../lib/time';
+import { ImportError, pickAndImportAudio } from '../../services/audioFiles';
+import { useApp } from '../../state/AppState';
+import { Alert } from '../../ui/alert';
+import { Button, Card, ChoiceSheet, ProgressBar, StatusBadge, TextPrompt } from '../../ui/components';
+import { HitRow } from '../../ui/HitRow';
+import { SUGGESTIONS } from '../../ui/suggestions';
+import { colors, HIT, radius, space } from '../../ui/theme';
+import { useSearch } from '../../ui/useSearch';
 
 export default function LibraryScreen() {
   const { repo, version, bump, quota, job, deleteInterview, semanticEnabled } = useApp();
@@ -34,6 +20,8 @@ export default function LibraryScreen() {
   const [query, setQuery] = useState('');
   const [importing, setImporting] = useState(false);
   const [renaming, setRenaming] = useState<Interview | null>(null);
+  const [menuFor, setMenuFor] = useState<Interview | null>(null);
+  const [quoteCount, setQuoteCount] = useState(0);
   const results = useSearch(query);
 
   useFocusEffect(
@@ -41,6 +29,7 @@ export default function LibraryScreen() {
       if (!repo) return;
       let alive = true;
       repo.listInterviews().then((list) => alive && setInterviews(list));
+      repo.listQuotes().then((q) => alive && setQuoteCount(q.length));
       return () => {
         alive = false;
       };
@@ -51,6 +40,10 @@ export default function LibraryScreen() {
 
   const onImport = async () => {
     if (!repo) return;
+    if (Platform.OS === 'web') {
+      Alert.alert('Aperçu web', 'L’import de fichiers audio et la transcription fonctionnent uniquement dans l’app iPhone. Ici, utilisez l’interview démo.');
+      return;
+    }
     setImporting(true);
     try {
       const audio = await pickAndImportAudio();
@@ -89,11 +82,7 @@ export default function LibraryScreen() {
         (i) => (i === 0 ? rename() : i === 1 ? remove() : undefined),
       );
     } else {
-      Alert.alert(it.title, undefined, [
-        { text: 'Renommer', onPress: rename },
-        { text: 'Supprimer', style: 'destructive', onPress: remove },
-        { text: 'Annuler', style: 'cancel' },
-      ]);
+      setMenuFor(it);
     }
   };
 
@@ -123,9 +112,28 @@ export default function LibraryScreen() {
             : 'Recherche textuelle : accents et majuscules ignorés, expressions exactes en premier, synonymes français'}
         </Text>
       ) : (
-        <Pressable onPress={() => router.push('/settings')} accessibilityRole="button">
+        <View style={{ gap: space.md }}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
+            {SUGGESTIONS.map((q) => (
+              <Pressable key={q} onPress={() => setQuery(q)} accessibilityRole="button" style={({ pressed }) => [styles.chip, pressed && { opacity: 0.7 }]}>
+                <Text style={styles.chipText}>« {q} »</Text>
+              </Pressable>
+            ))}
+          </ScrollView>
+          <View style={styles.stats}>
+            <Stat value={String(interviews.length)} label="interviews" />
+            <Stat value={String(quoteCount)} label="citations" />
+            <Stat value={`${Math.round(quota.usedSeconds / 60)}`} label="min transcrites" />
+          </View>
           <Card style={styles.quota}>
-            <Text style={styles.quotaTitle}>{quota.isPro ? 'MotMinute Pro' : 'Version gratuite'}</Text>
+            <View style={styles.quotaHead}>
+              <Text style={styles.quotaTitle}>{quota.isPro ? 'MotMinute Pro' : 'Version gratuite'}</Text>
+              {!quota.isPro ? (
+                <Text style={styles.link} onPress={() => router.push('/paywall')} accessibilityRole="link">
+                  Passer à Pro
+                </Text>
+              ) : null}
+            </View>
             <Text style={styles.quotaText}>
               {quota.isPro
                 ? 'Nouvelles transcriptions sans limite.'
@@ -133,14 +141,14 @@ export default function LibraryScreen() {
             </Text>
             {!quota.isPro ? <ProgressBar value={quota.usedSeconds / (quota.limitSeconds ?? 1)} /> : null}
           </Card>
-        </Pressable>
+          <Text style={styles.section}>Vos interviews</Text>
+        </View>
       )}
     </View>
   );
 
   return (
     <View style={styles.screen}>
-      <Stack.Screen options={SCREEN_OPTIONS} />
       {results.active ? (
         <FlatList
           data={results.hits}
@@ -185,6 +193,24 @@ export default function LibraryScreen() {
       <View style={styles.footer}>
         <Button label="Importer une interview" icon="＋" onPress={onImport} loading={importing} testID="import" />
       </View>
+      {menuFor ? (
+        <ChoiceSheet
+          title={menuFor.title}
+          onClose={() => setMenuFor(null)}
+          choices={[
+            { label: 'Renommer', onPress: () => setRenaming(menuFor) },
+            {
+              label: 'Supprimer',
+              destructive: true,
+              onPress: () =>
+                Alert.alert('Supprimer l’interview ?', `« ${menuFor.title} », son audio, sa transcription et ses citations seront effacés.`, [
+                  { text: 'Annuler', style: 'cancel' },
+                  { text: 'Supprimer', style: 'destructive', onPress: () => deleteInterview(menuFor.id) },
+                ]),
+            },
+          ]}
+        />
+      ) : null}
       <TextPrompt
         visible={renaming !== null}
         title="Renommer l’interview"
@@ -198,6 +224,15 @@ export default function LibraryScreen() {
           setRenaming(null);
         }}
       />
+    </View>
+  );
+}
+
+function Stat({ value, label }: { value: string; label: string }) {
+  return (
+    <View style={styles.stat}>
+      <Text style={styles.statValue}>{value}</Text>
+      <Text style={styles.statLabel}>{label}</Text>
     </View>
   );
 }
@@ -230,8 +265,17 @@ function InterviewRow({ it, progress, onPress, onMore }: { it: Interview; progre
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
-  list: { padding: space.lg, paddingBottom: 120, gap: space.md },
-  headerLink: { fontSize: 16, color: colors.text, fontWeight: '600', paddingVertical: 8 },
+  list: { padding: space.lg, paddingBottom: 96, gap: space.sm },
+  chips: { flexDirection: 'row', gap: space.sm },
+  chip: { borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, borderRadius: radius.pill, paddingHorizontal: space.md, minHeight: 36, justifyContent: 'center' },
+  chipText: { fontSize: 14, color: colors.accent, fontWeight: '600' },
+  stats: { flexDirection: 'row', gap: space.sm },
+  stat: { flex: 1, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, borderRadius: radius.lg, paddingVertical: space.md, alignItems: 'center' },
+  statValue: { fontSize: 22, fontWeight: '700', color: colors.text, fontVariant: ['tabular-nums'] },
+  statLabel: { fontSize: 12, color: colors.muted },
+  quotaHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  link: { fontSize: 14, fontWeight: '700', color: colors.accent, paddingVertical: 4 },
+  section: { fontSize: 13, fontWeight: '700', color: colors.muted, textTransform: 'uppercase', letterSpacing: 0.6, marginTop: space.sm },
   searchBox: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -243,7 +287,7 @@ const styles = StyleSheet.create({
     minHeight: HIT + 4,
   },
   searchIcon: { fontSize: 20, color: colors.muted, marginRight: space.sm },
-  searchInput: { flex: 1, fontSize: 17, color: colors.text, paddingVertical: space.md },
+  searchInput: { flex: 1, fontSize: 17, color: colors.text, paddingVertical: space.md, ...(Platform.OS === 'web' ? { outlineStyle: 'none' as never } : null) },
   searchMode: { fontSize: 13, color: colors.muted },
   quota: { gap: 6, padding: space.md },
   quotaTitle: { fontSize: 15, fontWeight: '700', color: colors.text },
@@ -253,17 +297,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
-    borderWidth: StyleSheet.hairlineWidth,
+    borderWidth: 1,
     borderColor: colors.border,
-    padding: space.lg,
+    paddingVertical: space.md,
+    paddingHorizontal: space.lg,
     gap: space.md,
   },
-  rowTitle: { fontSize: 17, fontWeight: '600', color: colors.text },
+  rowTitle: { fontSize: 16, fontWeight: '700', color: colors.text },
   rowMeta: { fontSize: 14, color: colors.muted },
   more: { width: HIT, height: HIT, alignItems: 'center', justifyContent: 'center' },
   moreText: { fontSize: 16, color: colors.muted, letterSpacing: 1 },
   empty: { paddingVertical: space.xxl, alignItems: 'center', gap: space.sm },
   emptyTitle: { fontSize: 17, fontWeight: '700', color: colors.text },
   emptyText: { fontSize: 15, color: colors.muted, textAlign: 'center', maxWidth: 320 },
-  footer: { position: 'absolute', left: space.lg, right: space.lg, bottom: space.xl },
+  footer: { position: 'absolute', left: space.lg, right: space.lg, bottom: space.md },
 });

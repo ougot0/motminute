@@ -4,11 +4,13 @@ import { join } from 'node:path';
 
 import { configure, renderRouter } from 'expo-router/testing-library';
 
-import Library from '../../src/app/index';
+import Library from '../../src/app/(tabs)/index';
+import TabsLayout from '../../src/app/(tabs)/_layout';
+import Search from '../../src/app/(tabs)/search';
 import Interview from '../../src/app/interview/[id]';
 import Paywall from '../../src/app/paywall';
-import Quotes from '../../src/app/quotes';
-import Settings from '../../src/app/settings';
+import Quotes from '../../src/app/(tabs)/quotes';
+import Settings from '../../src/app/(tabs)/settings';
 import { DEMO_TRANSCRIPT, seedDemo } from '../../src/data/demo';
 import { Repository } from '../../src/data/repository';
 import type { TranscriptionEngine } from '../../src/services/transcriptionRunner';
@@ -46,7 +48,16 @@ export async function bootApp(dir: string): Promise<{ repo: Repository; db: Clos
     </AppStateProvider>
   );
   const router = await renderRouter(
-    { _layout: Layout, index: Library, 'interview/[id]': Interview, quotes: Quotes, settings: Settings, paywall: Paywall },
+    {
+      _layout: Layout,
+      '(tabs)/_layout': TabsLayout,
+      '(tabs)/index': Library,
+      '(tabs)/search': Search,
+      '(tabs)/quotes': Quotes,
+      '(tabs)/settings': Settings,
+      'interview/[id]': Interview,
+      paywall: Paywall,
+    },
     { initialUrl: '/' },
   );
   // renderRouter active des minuteries simulées ; l'app utilise de vrais délais

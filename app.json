@@ -36,7 +36,12 @@
       "fr": "./locales/fr.json"
     },
     "plugins": [
-      "expo-router",
+      [
+        "expo-router",
+        {
+          "asyncRoutes": false
+        }
+      ],
       [
         "expo-audio",
         {

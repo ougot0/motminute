@@ -1,11 +1,12 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Linking, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { LEGAL_URLS } from '../config';
 import { formatDuration } from '../lib/time';
 import { buySubscription, fetchSubscriptionProducts, restoreSubscriptions, type StoreProduct } from '../services/subscriptions';
 import { useApp } from '../state/AppState';
+import { Alert } from '../ui/alert';
 import { Button, Card } from '../ui/components';
 import { colors, radius, space } from '../ui/theme';
 
@@ -53,6 +54,11 @@ export default function PaywallScreen() {
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+      {reason === 'export' ? (
+        <Card style={{ backgroundColor: colors.accentSoft }}>
+          <Text style={styles.body}>Copier toutes vos citations d’un coup fait partie de MotMinute Pro. La copie citation par citation reste gratuite.</Text>
+        </Card>
+      ) : null}
       {reason === 'quota' ? (
         <Card style={{ backgroundColor: colors.warnSoft }}>
           <Text style={styles.body}>
@@ -71,11 +77,27 @@ export default function PaywallScreen() {
       <View style={styles.bullets}>
         <Text style={styles.bullet}>• Nouvelles transcriptions sans quota mensuel</Text>
         <Text style={styles.bullet}>• Toujours sur l’iPhone : l’audio ne quitte pas l’appareil</Text>
+        <Text style={styles.bullet}>• Export de toutes vos citations en un geste</Text>
         <Text style={styles.bullet}>• À l’expiration, vos interviews et citations restent accessibles</Text>
       </View>
 
       {products === null ? (
         <ActivityIndicator color={colors.text} />
+      ) : Platform.OS === 'web' ? (
+        <View style={{ gap: space.md }}>
+          <Text style={[styles.small, { color: colors.warn, fontWeight: '700' }]}>
+            PRIX D’EXEMPLE — aperçu web. Sur iPhone, les prix affichés sont ceux renvoyés par l’App Store.
+          </Text>
+          {[
+            { id: 'm', label: 'Mensuel', price: '11,99 € / mois' },
+            { id: 'y', label: 'Annuel', price: '99,99 € / an' },
+          ].map((p) => (
+            <View key={p.id} style={[styles.product, { opacity: 0.6 }]}>
+              <Text style={[styles.productTitle, { flex: 1 }]}>{p.label} (exemple)</Text>
+              <Text style={styles.price}>{p.price}</Text>
+            </View>
+          ))}
+        </View>
       ) : products.length ? (
         products.map((p) => (
           <Pressable
