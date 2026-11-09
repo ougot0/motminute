@@ -27,7 +27,7 @@ async function play(reduce: boolean, ready = true) {
   await render(<LaunchOverlay ready={ready} onFinished={onFinished} />);
   await fireEvent(screen.getByTestId('launch-overlay', { includeHiddenElements: true }), 'layout', { nativeEvent: { layout: { width: 390, height: 844 } } });
   await act(async () => {
-    await jest.advanceTimersByTimeAsync(1000);
+    await jest.advanceTimersByTimeAsync(3000);
   });
   return { timing, onFinished };
 }
@@ -39,13 +39,14 @@ it('garde le splash natif jusqu’à ce que la copie React Native soit affichée
   expect(splash.hideAsync).toHaveBeenCalled();
 });
 
-it('350 ms : logo 100 % → 94 % et fondu de tout l’écran, puis retrait', async () => {
+it('logo 100 % → 94 % en 350 ms, puis l’écran se replie dans le bouton Enregistrer, puis retrait', async () => {
   const { timing, onFinished } = await play(false);
   const configs = timing.mock.calls.map((c) => c[1]);
   expect(configs).toEqual(
     expect.arrayContaining([
-      expect.objectContaining({ toValue: 0, duration: 350 }),
       expect.objectContaining({ toValue: 0.94, duration: 350 }),
+      expect.objectContaining({ duration: Overlay.COLLAPSE_MS }),
+      expect.objectContaining({ toValue: 0 }),
     ]),
   );
   expect(onFinished).toHaveBeenCalled();
@@ -57,6 +58,7 @@ it('« Réduire les animations » : fondu court, sans changement d’échelle', 
   const configs = timing.mock.calls.map((c) => c[1]);
   expect(configs).toHaveLength(1);
   expect(configs[0]).toMatchObject({ toValue: 0, duration: 150 });
+  expect(configs.some((c) => c.toValue === 0.94)).toBe(false);
   expect(onFinished).toHaveBeenCalled();
 });
 
