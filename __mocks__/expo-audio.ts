@@ -26,3 +26,7 @@ export const useAudioPlayerStatus = () => ({
 });
 export const createAudioPlayer = () => mockPlayer;
 export const setAudioModeAsync = jest.fn(async () => undefined);
+export const RecordingPresets = { HIGH_QUALITY: {}, LOW_QUALITY: {} };
+export const useAudioRecorder = () => ({ record: jest.fn(), stop: jest.fn(async () => undefined), pause: jest.fn(), prepareToRecordAsync: jest.fn(async () => undefined), uri: null });
+export const useAudioRecorderState = () => ({ isRecording: false, durationMillis: 0, canRecord: true });
+export const requestRecordingPermissionsAsync = jest.fn(async () => ({ granted: true }));

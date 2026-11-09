@@ -27,7 +27,8 @@ export default function TabsLayout() {
         sceneStyle: { backgroundColor: colors.bg },
       }}
     >
-      <Tabs.Screen name="index" options={{ title: 'Bibliothèque', headerTitle: 'MotMinute', tabBarIcon: icon('▤') }} />
+      <Tabs.Screen name="index" options={{ title: 'Accueil', headerTitle: 'MotMinute', tabBarIcon: icon('⌂') }} />
+      <Tabs.Screen name="library" options={{ title: 'Bibliothèque', tabBarIcon: icon('▤') }} />
       <Tabs.Screen name="search" options={{ title: 'Recherche', tabBarIcon: icon('⌕') }} />
       <Tabs.Screen name="quotes" options={{ title: 'Citations', tabBarIcon: icon('❝') }} />
       <Tabs.Screen name="settings" options={{ title: 'Réglages', tabBarIcon: icon('⚙') }} />

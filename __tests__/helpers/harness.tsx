@@ -7,6 +7,8 @@ import { configure, renderRouter } from 'expo-router/testing-library';
 import Library from '../../src/app/(tabs)/index';
 import TabsLayout from '../../src/app/(tabs)/_layout';
 import Search from '../../src/app/(tabs)/search';
+import LibraryTab from '../../src/app/(tabs)/library';
+import Record from '../../src/app/record';
 import Interview from '../../src/app/interview/[id]';
 import Paywall from '../../src/app/paywall';
 import Quotes from '../../src/app/(tabs)/quotes';
@@ -53,6 +55,8 @@ export async function bootApp(dir: string): Promise<{ repo: Repository; db: Clos
       '(tabs)/_layout': TabsLayout,
       '(tabs)/index': Library,
       '(tabs)/search': Search,
+      '(tabs)/library': LibraryTab,
+      record: Record,
       '(tabs)/quotes': Quotes,
       '(tabs)/settings': Settings,
       'interview/[id]': Interview,

@@ -10,16 +10,21 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 // Attention : remplacements par fonction, pour que les « $& » du bundle ne soient pas interprétés.
-const [, , distDir = 'dist-web', out = 'web-preview/index.html'] = process.argv;
+const args = process.argv.slice(2);
+const full = args.includes('--full'); // document HTML complet (GitHub Pages) ; sinon contenu d'artefact
+const [distDir = 'dist-web', out = 'web-preview/index.html'] = args.filter((a) => !a.startsWith('--'));
+const BASE = (process.env.WEB_BASE_URL ?? '').replace(/\/$/, '');
 const MIME = { '.png': 'image/png', '.m4a': 'audio/mp4', '.ttf': 'font/ttf', '.jpg': 'image/jpeg', '.wasm': 'application/wasm' };
 
 let html = fs.readFileSync(path.join(distDir, 'index.html'), 'utf8');
 const scripts = [...html.matchAll(/<script src="([^"]+)" defer><\/script>/g)];
-let js = scripts.map((m) => fs.readFileSync(path.join(distDir, m[1]), 'utf8')).join('\n;\n');
+const strip = (u) => (BASE && u.startsWith(BASE + '/') ? u.slice(BASE.length) : u);
+let js = scripts.map((m) => fs.readFileSync(path.join(distDir, strip(m[1])), 'utf8')).join('\n;\n');
 
 // Médias : chaque "/assets/..." devient une data URI.
-js = js.replace(/"(\/assets\/[^"]+)"/g, (whole, url) => {
-  const file = path.join(distDir, decodeURIComponent(url));
+js = js.replace(/"((?:\/[^"/]+)?\/assets\/[^"]+)"/g, (whole, url) => {
+  const local = strip(url);
+  const file = path.join(distDir, decodeURIComponent(local));
   if (!fs.existsSync(file)) return whole;
   const mime = MIME[path.extname(file)] ?? 'application/octet-stream';
   return JSON.stringify(`data:${mime};base64,${fs.readFileSync(file).toString('base64')}`);
@@ -54,13 +59,13 @@ html = html
     </style>`)
   .replace('<div id="root"></div>', () => `<div id="root"></div>
     <p class="caption">Aperçu web de MotMinute : interview démo fictive. La transcription, l’import de fichiers et les achats fonctionnent uniquement dans l’app iPhone.</p>
-    <script>try { if (location.pathname !== '/') history.replaceState(null, '', '/'); } catch (e) {}</script>
+    <script>try { var b = ${JSON.stringify(BASE)}, p = location.pathname; var ok = b ? p === b || p.indexOf(b + '/') === 0 : p === '/'; if (!ok) history.replaceState(null, '', b + '/'); } catch (e) {}</script>
     <script>${js}</script>`);
 
 // Page d'artefact : uniquement le contenu (le squelette <html>/<head>/<body> est ajouté à la publication).
-const head = html.match(/<head>([\s\S]*?)<\/head>/)[1].replace(/<meta charset[^>]*>|<meta name="viewport"[^>]*>|<meta httpEquiv[^>]*>/g, '');
+const head0 = html.match(/<head>([\s\S]*?)<\/head>/)[1].replace(/<meta charset[^>]*>|<meta name="viewport"[^>]*>|<meta httpEquiv[^>]*>/g, '');
 const body = html.match(/<body>([\s\S]*?)<\/body>/)[1];
-html = `${head.trim()}\n${body.trim()}\n`;
+if (!full) html = `${head0.trim()}\n${body.trim()}\n`;
 
 fs.mkdirSync(path.dirname(out), { recursive: true });
 fs.writeFileSync(out, html);

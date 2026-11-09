@@ -13,6 +13,9 @@ import AVFoundation
 import ExpoModulesCore
 import NaturalLanguage
 import Speech
+#if canImport(FoundationModels)
+import FoundationModels
+#endif
 
 public class MotMinuteSpeechModule: Module {
   private var currentJob: AnyObject?
@@ -83,6 +86,39 @@ public class MotMinuteSpeechModule: Module {
       guard let job = self.currentJob as? SpeechEngine.Job else { return false }
       await job.cancel()
       return true
+    }
+
+    // MARK: - Résumé (Apple Intelligence, sur l'iPhone, gratuit)
+
+    AsyncFunction("summaryAvailability") { () -> [String: Any] in
+      #if canImport(FoundationModels)
+      if #available(iOS 26.0, *) {
+        switch SystemLanguageModel.default.availability {
+        case .available:
+          return ["status": "ready"]
+        case .unavailable(.deviceNotEligible):
+          return ["status": "device-not-eligible"]
+        case .unavailable(.appleIntelligenceNotEnabled):
+          return ["status": "ai-disabled"]
+        case .unavailable(.modelNotReady):
+          return ["status": "model-not-ready"]
+        case .unavailable:
+          return ["status": "unavailable"]
+        }
+      }
+      #endif
+      return ["status": "unsupported-os"]
+    }
+
+    AsyncFunction("generateText") { (prompt: String, instructions: String) async throws -> String in
+      #if canImport(FoundationModels)
+      if #available(iOS 26.0, *) {
+        let session = LanguageModelSession(instructions: instructions)
+        let response = try await session.respond(to: prompt)
+        return response.content
+      }
+      #endif
+      throw Exception(name: "ERR_NO_MODEL", description: "Le résumé nécessite iOS 26 et Apple Intelligence.")
     }
 
     // MARK: - Recherche par sens (expérimental)

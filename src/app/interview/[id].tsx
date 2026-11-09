@@ -12,6 +12,7 @@ import { copyText } from '../../ui/clipboard';
 import { Alert } from '../../ui/alert';
 import { Button, Card, ProgressBar, StatusBadge, TextPrompt, TimeChip, useToast } from '../../ui/components';
 import { HitRow } from '../../ui/HitRow';
+import { SummaryCard } from '../../ui/SummaryCard';
 import { PlayerBar, useInterviewPlayer } from '../../ui/Player';
 import { colors, fonts, HIT, radius, space } from '../../ui/theme';
 import { useSearch } from '../../ui/useSearch';
@@ -144,6 +145,8 @@ export default function InterviewScreen() {
       {interview.status !== 'done' ? (
         <StatusCard interview={interview} job={myJob} quotaRemaining={quota.remainingSeconds} onStart={begin} onCancel={cancelTranscription} />
       ) : (
+        <>
+        <SummaryCard interviewId={interview.id} title={interview.title} />
         <View style={styles.searchBox}>
           <Text style={styles.searchIcon}>⌕</Text>
           <TextInput
@@ -157,6 +160,7 @@ export default function InterviewScreen() {
             clearButtonMode="while-editing"
           />
         </View>
+        </>
       )}
     </View>
   );

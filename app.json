@@ -45,8 +45,9 @@
       [
         "expo-audio",
         {
-          "microphonePermission": false,
-          "enableBackgroundPlayback": true
+          "microphonePermission": "MotMinute enregistre vos interviews avec le micro de l’iPhone. L’audio reste sur l’appareil.",
+          "enableBackgroundPlayback": true,
+          "enableBackgroundRecording": true
         }
       ],
       "expo-sqlite",

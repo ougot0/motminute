@@ -13,6 +13,7 @@ Pod::Spec.new do |s|
 
   s.dependency 'ExpoModulesCore'
   s.frameworks = 'Speech', 'AVFoundation', 'NaturalLanguage'
+  s.weak_frameworks = 'FoundationModels'
 
   s.source_files = '**/*.{h,m,swift}'
   s.pod_target_xcconfig = {

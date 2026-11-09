@@ -22,6 +22,8 @@ type NativeSpeech = {
   cancel(): Promise<boolean>;
   sentenceEmbeddingInfo(language: string): Promise<{ available: boolean; dimension?: number; revision?: number }>;
   embedSentences(texts: string[], language: string): Promise<number[][]>;
+  summaryAvailability(): Promise<{ status: string }>;
+  generateText(prompt: string, instructions: string): Promise<string>;
   addListener(event: 'onTranscriptionProgress', cb: (e: { fraction: number; processedSec: number }) => void): Subscription;
   addListener(event: 'onModelProgress', cb: (e: { fraction: number }) => void): Subscription;
 };

@@ -138,3 +138,23 @@ export async function pickAndImportAudio(): Promise<ImportedAudio | null> {
     }
   }
 }
+
+/** Garde un enregistrement fait dans l'app : copie privée + titre daté. */
+export async function adoptRecording(uri: string, durationSec: number, now = new Date()): Promise<ImportedAudio> {
+  const id = `rec-${now.getTime().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+  const ext = extensionOf(uri) || 'm4a';
+  const ref = `${id}.${ext}`;
+  try {
+    await new File(uri).copy(audioFileFor(ref));
+  } catch {
+    throw new ImportError('Impossible d’enregistrer le fichier sur l’iPhone. Vérifiez l’espace disponible.');
+  }
+  try {
+    const tmp = new File(uri);
+    if (tmp.exists) tmp.delete();
+  } catch {
+    // fichier temporaire : iOS le nettoiera
+  }
+  const date = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }).format(now);
+  return { id, ref, title: `Enregistrement du ${date}`, durationSec, originalFilename: null as unknown as string };
+}
