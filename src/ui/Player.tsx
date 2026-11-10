@@ -75,7 +75,16 @@ export function useInterviewPlayer(source: AudioSource | number | null) {
   const position = optimistic ?? status.currentTime;
   const skip = useCallback((delta: number) => seek(position + delta, player.playing), [seek, position, player]);
 
-  return { player, status, position, duration: status.duration, playing: status.playing, seek, toggle, skip };
+  const RATES = [1, 1.25, 1.5, 2];
+  const [rate, setRate] = useState(1);
+  const cycleRate = useCallback(() => {
+    const next = RATES[(RATES.indexOf(rate) + 1) % RATES.length];
+    player.setPlaybackRate(next);
+    setRate(next);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [player, rate]);
+
+  return { player, status, position, duration: status.duration, playing: status.playing, seek, toggle, skip, rate, cycleRate };
 }
 
 function SeekBar({ position, duration, onSeek }: { position: number; duration: number; onSeek: (t: number) => void }) {
@@ -128,14 +137,20 @@ function RoundButton({ label, onPress, big, a11y, testID }: { label: string; onP
 }
 
 export function PlayerBar({ controls, extra }: { controls: PlayerControls; extra?: React.ReactNode }) {
-  const { position, duration, playing, seek, toggle, skip, status } = controls;
+  const { position, duration, playing, seek, toggle, skip, status, rate, cycleRate } = controls;
   return (
     <View style={styles.bar} testID="player">
       <View style={styles.timeRow}>
         <Text style={styles.time} testID="player-position">
           {formatTimestamp(position)}
         </Text>
-        {!status.isLoaded ? <Text style={styles.loading}>Chargement…</Text> : null}
+        {!status.isLoaded ? (
+          <Text style={styles.loading}>Chargement…</Text>
+        ) : (
+          <Pressable onPress={cycleRate} testID="rate" accessibilityRole="button" accessibilityLabel={`Vitesse de lecture ${rate} fois`} hitSlop={8} style={styles.rate}>
+            <Text style={styles.rateText}>{String(rate).replace('.', ',')}×</Text>
+          </Pressable>
+        )}
         <Text style={[styles.time, styles.timeMuted]}>{formatTimestamp(duration)}</Text>
       </View>
       <SeekBar position={position} duration={duration} onSeek={(t) => seek(t, playing)} />
@@ -162,6 +177,8 @@ const styles = StyleSheet.create({
   time: { fontFamily: fonts.mono, fontSize: 17, fontWeight: '700', color: colors.mintText, fontVariant: ['tabular-nums'] },
   timeMuted: { color: colors.muted, fontWeight: '500' },
   loading: { fontSize: 13, color: colors.faint },
+  rate: { minWidth: 56, minHeight: 32, borderRadius: 16, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 10 },
+  rateText: { fontSize: 14, fontWeight: '800', color: colors.accent, fontVariant: ['tabular-nums'] },
   seekHit: { height: HIT, justifyContent: 'center' },
   track: { height: 4, borderRadius: 2, backgroundColor: colors.surfaceAlt, overflow: 'hidden' },
   fill: { height: 4, backgroundColor: colors.accent },

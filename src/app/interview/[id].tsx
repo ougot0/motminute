@@ -11,6 +11,9 @@ import { useApp } from '../../state/AppState';
 import { copyText } from '../../ui/clipboard';
 import { Alert } from '../../ui/alert';
 import { Button, Card, ProgressBar, StatusBadge, TextPrompt, TimeChip, useToast } from '../../ui/components';
+import { extractTopics } from '../../lib/topics';
+import { formatTranscript } from '../../lib/transcriptExport';
+import { addMarker, loadMarkers, removeMarker, type Marker } from '../../services/markers';
 import { HitRow } from '../../ui/HitRow';
 import { SummaryCard } from '../../ui/SummaryCard';
 import { PlayerBar, useInterviewPlayer } from '../../ui/Player';
@@ -22,7 +25,7 @@ type Params = { id: string; t?: string; seg?: string; autostart?: string };
 export default function InterviewScreen() {
   const params = useLocalSearchParams<Params>();
   const id = String(params.id);
-  const { repo, version, bump, job, startTranscription, cancelTranscription, quota } = useApp();
+  const { repo, version, bump, job, startTranscription, cancelTranscription, quota, isPro } = useApp();
   const insets = useSafeAreaInsets();
   const toast = useToast();
   const listRef = useRef<FlatList<Segment>>(null);
@@ -32,14 +35,16 @@ export default function InterviewScreen() {
   const [selectedId, setSelectedId] = useState<number | null>(params.seg ? Number(params.seg) : null);
   const [query, setQuery] = useState('');
   const [editing, setEditing] = useState<Segment | null>(null);
+  const [markers, setMarkers] = useState<Marker[]>([]);
 
   useEffect(() => {
     if (!repo) return;
     let alive = true;
-    Promise.all([repo.getInterview(id), repo.listSegments(id)]).then(([it, segs]) => {
+    Promise.all([repo.getInterview(id), repo.listSegments(id), loadMarkers(repo, id)]).then(([it, segs, marks]) => {
       if (!alive) return;
       setInterview(it);
       setSegments(segs);
+      setMarkers(marks);
     });
     return () => {
       alive = false;
@@ -101,6 +106,34 @@ export default function InterviewScreen() {
   }, [controls.position, segments]);
 
   const selected = segments.find((s) => s.id === selectedId) ?? null;
+  const topics = useMemo(() => extractTopics(segments.map((s) => s.text)), [segments]);
+  const markedIds = useMemo(
+    () => new Set(segments.filter((s) => markers.some((m) => m.t >= s.start - 0.5 && m.t < s.end + 1.5)).map((s) => s.id)),
+    [segments, markers],
+  );
+
+  const mark = async () => {
+    if (!repo) return;
+    const t = controls.position;
+    setMarkers(await addMarker(repo, id, t));
+    toast.show(`Repère posé à ${formatTimestamp(t)}`);
+  };
+
+  const unmark = (t: number) =>
+    Alert.alert(`Supprimer le repère ${formatTimestamp(t)} ?`, undefined, [
+      { text: 'Annuler', style: 'cancel' },
+      { text: 'Supprimer', style: 'destructive', onPress: async () => repo && setMarkers(await removeMarker(repo, id, t)) },
+    ]);
+
+  const copyAll = async () => {
+    if (!interview) return;
+    if (!isPro) {
+      router.push({ pathname: '/paywall', params: { reason: 'export' } });
+      return;
+    }
+    const ok = await copyText(formatTranscript(interview.title, segments));
+    toast.show(ok ? 'Transcription complète copiée' : 'Copie bloquée par le navigateur');
+  };
 
   const copy = async (s: Segment) => {
     if (!interview) return;
@@ -147,6 +180,42 @@ export default function InterviewScreen() {
       ) : (
         <>
         <SummaryCard interviewId={interview.id} title={interview.title} />
+        {topics.length ? (
+          <View style={{ gap: 6 }}>
+            <Text style={styles.label}>Sujets</Text>
+            <View style={styles.chipsRow}>
+              {topics.map((w) => (
+                <Pressable key={w} onPress={() => setQuery(w)} accessibilityRole="button" style={styles.topic}>
+                  <Text style={styles.topicText}>{w}</Text>
+                </Pressable>
+              ))}
+            </View>
+          </View>
+        ) : null}
+        {markers.length ? (
+          <View style={{ gap: 6 }}>
+            <Text style={styles.label}>Repères · maintenir pour supprimer</Text>
+            <View style={styles.chipsRow}>
+              {markers.map((m) => (
+                <Pressable
+                  key={m.t}
+                  testID={`marker-${Math.round(m.t)}`}
+                  onPress={() => controls.seek(m.t, true)}
+                  onLongPress={() => unmark(m.t)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Repère ${formatTimestamp(m.t)}`}
+                  style={styles.marker}
+                >
+                  <Text style={styles.markerText}>⚑ {formatTimestamp(m.t)}</Text>
+                </Pressable>
+              ))}
+            </View>
+          </View>
+        ) : null}
+        <Pressable onPress={copyAll} accessibilityRole="button" style={styles.copyAll} testID="copy-transcript">
+          <Text style={styles.copyAllText}>Copier toute la transcription</Text>
+          {!isPro ? <Text style={styles.pro}>PRO</Text> : null}
+        </Pressable>
         <View style={styles.searchBox}>
           <Text style={styles.searchIcon}>⌕</Text>
           <TextInput
@@ -226,7 +295,7 @@ export default function InterviewScreen() {
           keyExtractor={(s) => String(s.id)}
           contentContainerStyle={styles.list}
           ListHeaderComponent={header}
-          extraData={`${selectedId}|${playingId}`}
+          extraData={`${selectedId}|${playingId}|${markers.length}`}
           onScrollToIndexFailed={(info) => {
             listRef.current?.scrollToOffset({ offset: info.averageItemLength * info.index, animated: false });
             setTimeout(() => listRef.current?.scrollToIndex({ index: info.index, viewPosition: 0.25 }), 120);
@@ -236,6 +305,7 @@ export default function InterviewScreen() {
               s={item}
               selected={item.id === selectedId}
               playing={item.id === playingId}
+              marked={markedIds.has(item.id)}
               onSelect={() => setSelectedId(item.id === selectedId ? null : item.id)}
               onPlay={() => {
                 setSelectedId(item.id);
@@ -247,7 +317,16 @@ export default function InterviewScreen() {
       )}
       <View style={{ paddingBottom: Math.max(insets.bottom, space.md), backgroundColor: colors.surface }}>
         {selectedPanel}
-        <PlayerBar controls={controls} />
+        <PlayerBar
+          controls={controls}
+          extra={
+            interview.status === 'done' ? (
+              <Pressable onPress={mark} accessibilityRole="button" testID="add-marker" style={styles.markBtn}>
+                <Text style={styles.markBtnText}>⚑ Marquer ce moment</Text>
+              </Pressable>
+            ) : null
+          }
+        />
       </View>
       {toast.node}
       <TextPrompt
@@ -324,12 +403,14 @@ function SegmentRow({
   s,
   selected,
   playing,
+  marked,
   onSelect,
   onPlay,
 }: {
   s: Segment;
   selected: boolean;
   playing: boolean;
+  marked?: boolean;
   onSelect: () => void;
   onPlay: () => void;
 }) {
@@ -346,6 +427,7 @@ function SegmentRow({
       <Text style={styles.segText}>
         {s.text}
         {s.edited ? <Text style={styles.edited}> (corrigé)</Text> : null}
+        {marked ? <Text style={styles.flag}> ⚑</Text> : null}
       </Text>
     </Pressable>
   );
@@ -386,6 +468,18 @@ const styles = StyleSheet.create({
   segSelected: { backgroundColor: colors.surface, borderColor: colors.accent },
   segText: { flex: 1, fontFamily: fonts.serif, fontSize: 17, lineHeight: 25, color: colors.text },
   edited: { fontFamily: undefined, fontSize: 12, color: colors.faint },
+  label: { fontSize: 12, fontWeight: '700', color: colors.muted, textTransform: 'uppercase', letterSpacing: 0.6 },
+  chipsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  topic: { borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, borderRadius: radius.pill, paddingHorizontal: 12, minHeight: 32, justifyContent: 'center' },
+  topicText: { fontSize: 14, fontWeight: '600', color: colors.accent },
+  marker: { backgroundColor: colors.mintSoft, borderRadius: radius.pill, paddingHorizontal: 12, minHeight: 32, justifyContent: 'center' },
+  markerText: { fontSize: 14, fontWeight: '700', color: colors.mintText, fontVariant: ['tabular-nums'] },
+  copyAll: { flexDirection: 'row', alignItems: 'center', gap: space.sm, alignSelf: 'flex-start', minHeight: 36 },
+  copyAllText: { fontSize: 14, fontWeight: '700', color: colors.accent },
+  pro: { fontSize: 10, fontWeight: '800', color: colors.onInk, backgroundColor: colors.accent, borderRadius: 4, paddingHorizontal: 5, paddingVertical: 1, overflow: 'hidden' },
+  flag: { fontSize: 14, color: colors.mintText },
+  markBtn: { alignSelf: 'center', minHeight: 36, paddingHorizontal: space.lg, justifyContent: 'center' },
+  markBtnText: { fontSize: 14, fontWeight: '700', color: colors.mintText },
   panel: { paddingHorizontal: space.lg, paddingTop: space.md, gap: space.sm, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
   panelTop: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   panelText: { flex: 1, fontFamily: fonts.serif, fontSize: 15, lineHeight: 20, color: colors.text },

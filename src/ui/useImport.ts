@@ -4,6 +4,7 @@ import { Platform } from 'react-native';
 
 import { ImportError, pickAndImportAudio, type ImportedAudio } from '../services/audioFiles';
 import { sampleRef, type Sample } from '../data/samples';
+import { saveMarkers } from '../services/markers';
 import { useApp } from '../state/AppState';
 import { Alert } from './alert';
 
@@ -12,7 +13,7 @@ export function useAddInterview() {
   const { repo, bump } = useApp();
   const [importing, setImporting] = useState(false);
 
-  const add = async (audio: ImportedAudio) => {
+  const add = async (audio: ImportedAudio, markerTimes: number[] = []) => {
     if (!repo) return;
     await repo.insertInterview({
       id: audio.id,
@@ -23,6 +24,7 @@ export function useAddInterview() {
       originalFilename: audio.originalFilename ?? null,
       source: 'user',
     });
+    if (markerTimes.length) await saveMarkers(repo, audio.id, markerTimes.map((t) => ({ t, createdAt: Date.now() })));
     bump();
     router.push({ pathname: '/interview/[id]', params: { id: audio.id, autostart: '1' } });
   };

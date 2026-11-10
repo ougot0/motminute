@@ -20,6 +20,7 @@ export default function RecordScreen() {
   const state = useAudioRecorderState(recorder, 200);
   const { add } = useAddInterview();
   const [phase, setPhase] = useState<'idle' | 'recording' | 'paused' | 'saving'>('idle');
+  const [moments, setMoments] = useState<number[]>([]);
   const web = Platform.OS === 'web';
 
   useEffect(
@@ -68,7 +69,7 @@ export default function RecordScreen() {
     try {
       const audio = await adoptRecording(recorder.uri, seconds);
       router.back();
-      await add(audio);
+      await add(audio, moments);
     } catch (e) {
       setPhase('idle');
       Alert.alert('Enregistrement non sauvegardé', e instanceof Error ? e.message : String(e));
@@ -105,11 +106,23 @@ export default function RecordScreen() {
       </Pressable>
       <Text style={styles.hint}>{active ? 'Touchez pour arrêter : la transcription démarre aussitôt' : 'Touchez pour enregistrer l’interview'}</Text>
 
-      {active ? <Button label={phase === 'paused' ? 'Reprendre' : 'Pause'} variant="secondary" onPress={togglePause} style={{ alignSelf: 'stretch' }} /> : null}
+      {active ? (
+        <View style={{ flexDirection: 'row', gap: space.sm, alignSelf: 'stretch' }}>
+          <Button label={phase === 'paused' ? 'Reprendre' : 'Pause'} variant="secondary" onPress={togglePause} style={{ flex: 1 }} />
+          <Button
+            label={`⚑ Moment fort${moments.length ? ` (${moments.length})` : ''}`}
+            variant="secondary"
+            onPress={() => setMoments((m) => [...m, state.durationMillis / 1000])}
+            style={{ flex: 1 }}
+            testID="record-marker"
+          />
+        </View>
+      ) : null}
 
       <View style={styles.tips}>
         <Text style={styles.tip}>• Posez l’iPhone près de la personne interviewée.</Text>
         <Text style={styles.tip}>• L’enregistrement continue écran verrouillé.</Text>
+        <Text style={styles.tip}>• « Moment fort » pose un repère : vous le retrouverez dans la transcription.</Text>
         <Text style={styles.tip}>
           • {quota.isPro ? 'Transcription illimitée avec Pro.' : `Transcription gratuite restante : ${Math.floor((quota.remainingSeconds ?? 0) / 60)} min.`}
         </Text>

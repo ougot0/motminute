@@ -56,7 +56,7 @@ export default function PaywallScreen() {
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       {reason === 'export' ? (
         <Card style={{ backgroundColor: colors.accentSoft }}>
-          <Text style={styles.body}>Copier toutes vos citations d’un coup fait partie de MotMinute Pro. La copie citation par citation reste gratuite.</Text>
+          <Text style={styles.body}>Copier toutes les citations ou une transcription complète d’un coup fait partie de MotMinute Pro. La copie citation par citation reste gratuite.</Text>
         </Card>
       ) : null}
       {reason === 'quota' ? (
@@ -77,7 +77,7 @@ export default function PaywallScreen() {
       <View style={styles.bullets}>
         <Text style={styles.bullet}>• Nouvelles transcriptions sans quota mensuel</Text>
         <Text style={styles.bullet}>• Toujours sur l’iPhone : l’audio ne quitte pas l’appareil</Text>
-        <Text style={styles.bullet}>• Export de toutes vos citations en un geste</Text>
+        <Text style={styles.bullet}>• Export des citations et des transcriptions complètes</Text>
         <Text style={styles.bullet}>• À l’expiration, vos interviews et citations restent accessibles</Text>
       </View>
 

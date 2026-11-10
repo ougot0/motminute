@@ -14,6 +14,7 @@ export const mockPlayer = {
     mockPlayer.playing = false;
   }),
   remove: jest.fn(),
+  setPlaybackRate: jest.fn(),
   addListener: jest.fn(() => ({ remove: jest.fn() })),
 };
 export const useAudioPlayer = () => mockPlayer;
