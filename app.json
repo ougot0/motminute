@@ -1,0 +1,80 @@
+{
+  "expo": {
+    "name": "MotMinute",
+    "slug": "motminute",
+    "scheme": "motminute",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#F8F7F3",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.motminute.app",
+      "infoPlist": {
+        "NSSpeechRecognitionUsageDescription": "MotMinute transcrit vos interviews directement sur l’iPhone pour retrouver les citations. L’audio ne quitte pas l’appareil.",
+        "ITSAppUsesNonExemptEncryption": false,
+        "CFBundleDevelopmentRegion": "fr",
+        "CFBundleAllowMixedLocalizations": true
+      }
+    },
+    "android": {
+      "package": "com.motminute.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#F7F3EC",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "output": "single"
+    },
+    "locales": {
+      "fr": "./locales/fr.json"
+    },
+    "plugins": [
+      [
+        "expo-router",
+        {
+          "asyncRoutes": false
+        }
+      ],
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "MotMinute enregistre vos interviews avec le micro de l’iPhone. L’audio reste sur l’appareil.",
+          "enableBackgroundPlayback": true,
+          "enableBackgroundRecording": true
+        }
+      ],
+      "expo-sqlite",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#2B00FF",
+          "image": "./assets/splash-logo.png",
+          "imageWidth": 220,
+          "resizeMode": "contain",
+          "ios": {
+            "backgroundColor": "#2B00FF",
+            "image": "./assets/splash-logo.png",
+            "imageWidth": 220,
+            "resizeMode": "contain"
+          }
+        }
+      ],
+      "expo-iap"
+    ],
+    "experiments": {
+      "typedRoutes": false
+    },
+    "extra": {
+      "eas": {
+        "projectId": ""
+      }
+    }
+  }
+}

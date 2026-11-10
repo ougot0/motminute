@@ -1,0 +1,7 @@
+{
+  "name": "motminute-speech",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Module Expo local : transcription SpeechAnalyzer (iOS 26) et embeddings NaturalLanguage",
+  "main": "index.ts"
+}

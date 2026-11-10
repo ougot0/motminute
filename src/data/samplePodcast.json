@@ -1,0 +1,68 @@
+{
+  "id": "podcast-ville",
+  "title": "Exemple — Podcast « Ville durable » (fictif)",
+  "fileName": "ville-durable-episode-12.m4a",
+  "durationSec": 44.3,
+  "segments": [
+    {
+      "start": 0.6,
+      "end": 4.96,
+      "text": "Bienvenue dans Ville durable. Je reçois Inès Martin, maire d’une commune de douze mille habitants."
+    },
+    {
+      "start": 5.66,
+      "end": 10.29,
+      "text": "Merci de m’accueillir. On parle souvent d’écologie en ville, moi je préfère parler de qualité de vie."
+    },
+    {
+      "start": 10.99,
+      "end": 12.05,
+      "text": "Qu’avez-vous changé en premier ?"
+    },
+    {
+      "start": 12.75,
+      "end": 17.93,
+      "text": "Les cours d’école. On a retiré le bitume et on a planté des arbres. Les enfants ont tout de suite vu la différence."
+    },
+    {
+      "start": 18.63,
+      "end": 19.53,
+      "text": "Et à l’échelle de la ville ?"
+    },
+    {
+      "start": 20.23,
+      "end": 23.97,
+      "text": "Nous avons planté dix mille arbres en trois ans. C’était notre promesse de campagne."
+    },
+    {
+      "start": 24.67,
+      "end": 25.73,
+      "text": "Combien cela a-t-il coûté ?"
+    },
+    {
+      "start": 26.43,
+      "end": 29.47,
+      "text": "Environ quatre cent mille euros, financés pour moitié par la région."
+    },
+    {
+      "start": 30.17,
+      "end": 31.12,
+      "text": "Il y a eu des oppositions ?"
+    },
+    {
+      "start": 31.82,
+      "end": 37.04,
+      "text": "Bien sûr. Certains commerçants avaient peur de perdre des places de parking. On a pris le temps de les écouter."
+    },
+    {
+      "start": 37.74,
+      "end": 38.93,
+      "text": "Votre conseil à un autre maire ?"
+    },
+    {
+      "start": 39.63,
+      "end": 42.6,
+      "text": "Commencez petit, montrez les résultats, et les habitants vous suivront."
+    }
+  ]
+}
